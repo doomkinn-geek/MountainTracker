@@ -1,0 +1,6 @@
+@MountainTracker.WebApi_HostAddress = http://localhost:5293
+
+GET {{MountainTracker.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
