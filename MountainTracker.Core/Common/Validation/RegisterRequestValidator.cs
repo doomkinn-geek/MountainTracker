@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
+using MountainTracker.Core.DTO.Auth;
 
 namespace MountainTracker.Core.Common.Validation
 {
