@@ -19,7 +19,7 @@ namespace MountainTracker.Infrastructure.Services
             _roomRepository = roomRepository;
         }
 
-        public async Task UpdateLocationAsync(Guid userId, LocationDto locationDto)
+        public async Task UpdateLocationAsync(string userId, LocationDto locationDto)
         {
             // Создаём запись локации
             var loc = new Location

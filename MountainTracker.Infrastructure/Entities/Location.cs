@@ -6,8 +6,8 @@ namespace MountainTracker.Infrastructure.Entities
     {
         public Guid Id { get; set; }
 
-        public Guid UserId { get; set; }
-        public User User { get; set; } = null!;
+        public string UserId { get; set; }
+        public ApplicationUser User { get; set; } = null!;
 
         public double Latitude { get; set; }
         public double Longitude { get; set; }

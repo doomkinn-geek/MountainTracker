@@ -9,8 +9,8 @@ namespace MountainTracker.Infrastructure.Entities
         public Guid RoomId { get; set; }
         public Room Room { get; set; } = null!;
 
-        public Guid UserId { get; set; }  // кто создал
-        public User? User { get; set; }
+        public string UserId { get; set; }  // кто создал
+        public ApplicationUser? User { get; set; }
 
         public string Title { get; set; } = null!;
 

@@ -1,16 +1,11 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 
 namespace MountainTracker.Infrastructure.Entities
 {
-    public class User
+    public class ApplicationUser : IdentityUser
     {
-        public Guid Id { get; set; }
-
-        public string Login { get; set; } = null!;
-
-        public string PasswordHash { get; set; } = null!;
-
         public string? Nickname { get; set; }
 
         public string? MarkerColor { get; set; }

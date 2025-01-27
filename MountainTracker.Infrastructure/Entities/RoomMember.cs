@@ -7,8 +7,8 @@ namespace MountainTracker.Infrastructure.Entities
         public Guid RoomId { get; set; }
         public Room Room { get; set; } = null!;
 
-        public Guid UserId { get; set; }
-        public User User { get; set; } = null!;
+        public string UserId { get; set; }
+        public ApplicationUser User { get; set; } = null!;
 
         public DateTime JoinedAt { get; set; }
 

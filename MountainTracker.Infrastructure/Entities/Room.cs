@@ -11,7 +11,7 @@ namespace MountainTracker.Infrastructure.Entities
 
         public string? PasswordHash { get; set; }
 
-        public Guid CreatedByUserId { get; set; }
+        public string CreatedByUserId { get; set; }
 
         public bool IsPublic { get; set; }
 

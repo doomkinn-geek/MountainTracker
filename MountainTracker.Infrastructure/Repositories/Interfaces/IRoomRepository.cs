@@ -7,7 +7,7 @@ namespace MountainTracker.Infrastructure.Repositories.Interfaces
 {
     public interface IRoomRepository : IGenericRepository<Room>
     {
-        Task<IEnumerable<Room>> GetRoomsForUserAsync(Guid userId);
+        Task<IEnumerable<Room>> GetRoomsForUserAsync(string userId);
         // Другие методы, специфичные для Room
     }
 }

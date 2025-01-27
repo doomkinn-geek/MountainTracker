@@ -9,6 +9,8 @@ using MountainTracker.Infrastructure.Services;
 using MountainTracker.Core.Services;
 using System.Text;
 using MountainTracker.WebApi.Filters;
+using Microsoft.AspNetCore.Identity;
+using MountainTracker.Infrastructure.Entities;
 
 namespace MountainTracker.WebApi
 {
@@ -28,8 +30,7 @@ namespace MountainTracker.WebApi
                 // или UseSqlServer(connectionString)
             });
 
-            // 3) Регистрируем репозитории
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            // 3) Регистрируем репозитории            
             builder.Services.AddScoped<IRoomRepository, RoomRepository>();
             builder.Services.AddScoped<ILocationRepository, LocationRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
@@ -41,13 +42,10 @@ namespace MountainTracker.WebApi
             builder.Services.AddScoped<IRoomService, RoomService>();
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<ILocationService, LocationService>();
-            builder.Services.AddScoped<IReminderService, ReminderService>();
+            builder.Services.AddScoped<IReminderService, ReminderService>();            
 
             // 5) Контроллеры + Swagger            
-            builder.Services.AddControllers(options =>
-            {
-                options.Filters.Add(new ApiExceptionFilter());
-            });
+            builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -60,7 +58,7 @@ namespace MountainTracker.WebApi
                 });
 
                 // Для JWT авторизации в Swagger (опционально):
-                /*
+                
                 var securityScheme = new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -82,8 +80,7 @@ namespace MountainTracker.WebApi
                         securityScheme,
                         new string[] {}
                     }
-                });
-                */
+                });                
             });
 
             // 6) Аутентификация (JWT) - опционально
@@ -109,11 +106,27 @@ namespace MountainTracker.WebApi
                     };
                 });
 
+            builder.Services.Configure<IdentityOptions>(options =>
+            {
+                // Настройка требований к паролю
+                options.Password.RequireDigit = false;                   // не требовать обязательно цифры
+                options.Password.RequireLowercase = false;               // не требовать строчные
+                options.Password.RequireUppercase = false;               // не требовать заглавные
+                options.Password.RequireNonAlphanumeric = false;         // не требовать символы (например, !@#)
+                options.Password.RequiredLength = 6;                     // минимальная длина пароля
+                options.Password.RequiredUniqueChars = 1;                // количество уникальных символов
+            });
+
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<MountainTrackerDbContext>()
+                .AddDefaultTokenProviders();           
+
+
             // (Опционально) Глобальный фильтр для обработки исключений
-            // builder.Services.AddControllers(options =>
-            // {
-            //     options.Filters.Add(new ApiExceptionFilter());
-            // });
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add(new ApiExceptionFilter());
+            });
 
             var app = builder.Build();
 

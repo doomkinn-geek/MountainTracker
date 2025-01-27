@@ -20,7 +20,7 @@ namespace MountainTracker.Infrastructure.Services
             _roomRepository = roomRepository;
         }
 
-        public async Task<Guid> CreateReminderAsync(ReminderDto reminderDto, Guid creatorUserId)
+        public async Task<Guid> CreateReminderAsync(ReminderDto reminderDto, string creatorUserId)
         {
             // Проверим, что комната существует
             var room = await _roomRepository.GetByIdAsync(reminderDto.RoomId);
@@ -48,7 +48,7 @@ namespace MountainTracker.Infrastructure.Services
             return reminder.Id;
         }
 
-        public async Task DeleteReminderAsync(Guid reminderId, Guid userId)
+        public async Task DeleteReminderAsync(Guid reminderId, string userId)
         {
             var reminder = await _reminderRepository.GetByIdAsync(reminderId);
             if (reminder == null)

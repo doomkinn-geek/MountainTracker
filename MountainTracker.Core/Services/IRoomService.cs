@@ -12,11 +12,11 @@ namespace MountainTracker.Core.Services
     /// </summary>
     public interface IRoomService
     {
-        Task<Guid> CreateRoomAsync(RoomCreateDto dto, Guid creatorUserId);
-        Task<bool> JoinRoomAsync(Guid roomId, Guid userId, string? roomPassword = null);
-        Task LeaveRoomAsync(Guid roomId, Guid userId);
+        Task<Guid> CreateRoomAsync(RoomCreateDto dto, string creatorUserId);
+        Task<bool> JoinRoomAsync(Guid roomId, string userId, string? roomPassword = null);
+        Task LeaveRoomAsync(Guid roomId, string userId);
         Task<RoomDto?> GetRoomInfoAsync(Guid roomId);
-        Task<IEnumerable<RoomDto>> GetRoomsForUserAsync(Guid userId);        
+        Task<IEnumerable<RoomDto>> GetRoomsForUserAsync(string userId);        
     }
 }
 

@@ -16,7 +16,7 @@ namespace MountainTracker.Infrastructure.Repositories.Implementations
         {
         }
 
-        public async Task<IEnumerable<Room>> GetRoomsForUserAsync(Guid userId)
+        public async Task<IEnumerable<Room>> GetRoomsForUserAsync(string userId)
         {
             // Пример: выбираем комнаты, где userId состоит в RoomMembers
             return await _context.Rooms

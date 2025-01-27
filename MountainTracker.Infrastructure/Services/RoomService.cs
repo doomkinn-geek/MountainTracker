@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using MountainTracker.Core.DTO.Room;
 using MountainTracker.Core.DTO.User;
 using MountainTracker.Core.Services;
@@ -13,52 +14,52 @@ namespace MountainTracker.Infrastructure.Services
     public class RoomService : IRoomService
     {
         private readonly IRoomRepository _roomRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public RoomService(IRoomRepository roomRepository, IUserRepository userRepository)
+        public RoomService(IRoomRepository roomRepository, UserManager<ApplicationUser> userManager)
         {
             _roomRepository = roomRepository;
-            _userRepository = userRepository;
+            _userManager = userManager;
         }
 
-        public async Task<Guid> CreateRoomAsync(RoomCreateDto dto, Guid creatorUserId)
+        public async Task<Guid> CreateRoomAsync(RoomCreateDto dto, string creatorUserId)
         {
-            // Проверим, существует ли пользователь
-            var creator = await _userRepository.GetByIdAsync(creatorUserId);
+            // 1) Получаем пользователя через UserManager
+            var creator = await _userManager.FindByIdAsync(creatorUserId.ToString());
             if (creator == null)
                 throw new Exception("Creator not found");
 
+            // 2) Создаём объект Room
             var room = new Room
             {
                 Id = Guid.NewGuid(),
                 Title = dto.Title,
                 PasswordHash = dto.Password != null ? HashPassword(dto.Password) : null,
-                CreatedByUserId = creator.Id,
+                // NOTE: room.CreatedByUserId — если это Guid, ок. Но creator.Id может быть string.
+                // Если нужно хранить его как Guid, настраиваем IdentityUser<Guid>. 
+                CreatedByUserId = creatorUserId,
                 IsPublic = dto.IsPublic,
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Сохраняем
             await _roomRepository.AddAsync(room);
             await _roomRepository.SaveChangesAsync();
 
-            // Автоматически добавляем создателя в участники (RoomMember)
+            // 3) Добавляем участника
             var roomMember = new RoomMember
             {
                 RoomId = room.Id,
-                UserId = creator.Id,
+                UserId = creatorUserId, // Guid or string, depending on your design
                 RoleInRoom = "admin",
                 JoinedAt = DateTime.UtcNow
             };
-            // Можно сохранить через отдельный репозиторий RoomMemberRepository,
-            // но чтобы упростить — в EF можно добавить к Room.RoomMembers и сохранить
             room.RoomMembers.Add(roomMember);
             await _roomRepository.SaveChangesAsync();
 
             return room.Id;
         }
 
-        public async Task<bool> JoinRoomAsync(Guid roomId, Guid userId, string? roomPassword = null)
+        public async Task<bool> JoinRoomAsync(Guid roomId, string userId, string? roomPassword = null)
         {
             // 1) Ищем комнату
             var room = await _roomRepository.GetByIdAsync(roomId);
@@ -97,7 +98,7 @@ namespace MountainTracker.Infrastructure.Services
             return true;
         }
 
-        public async Task LeaveRoomAsync(Guid roomId, Guid userId)
+        public async Task LeaveRoomAsync(Guid roomId, string userId)
         {
             // 1) Ищем комнату
             var room = await _roomRepository.GetByIdAsync(roomId);
@@ -144,7 +145,7 @@ namespace MountainTracker.Infrastructure.Services
             };
         }
 
-        public async Task<IEnumerable<RoomDto>> GetRoomsForUserAsync(Guid userId)
+        public async Task<IEnumerable<RoomDto>> GetRoomsForUserAsync(string userId)
         {
             var rooms = await _roomRepository.GetRoomsForUserAsync(userId);
 

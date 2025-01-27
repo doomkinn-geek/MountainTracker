@@ -12,7 +12,7 @@ namespace MountainTracker.Core.Services
     /// </summary>
     public interface IChatService
     {
-        Task<MessageDto> SendMessageAsync(Guid roomId, Guid authorId, string text);
+        Task<MessageDto> SendMessageAsync(Guid roomId, string authorId, string text);
         Task<IEnumerable<MessageDto>> GetLastMessagesAsync(Guid roomId, int limit = 50);
     }
 }

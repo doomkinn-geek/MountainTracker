@@ -25,7 +25,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var userDto = await _userService.GetUserByIdAsync(userId.Value);
+            var userDto = await _userService.GetUserByIdAsync(userId);
             if (userDto == null)
                 return NotFound();
 
@@ -39,7 +39,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            await _userService.UpdateUserProfileAsync(userId.Value, dto);
+            await _userService.UpdateUserProfileAsync(userId, dto);
             return NoContent();
         }
 
@@ -50,7 +50,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            await _userService.ChangePasswordAsync(userId.Value, request.OldPassword, request.NewPassword);
+            await _userService.ChangePasswordAsync(userId, request.OldPassword, request.NewPassword);
             return NoContent();
         }
 
@@ -60,13 +60,11 @@ namespace MountainTracker.WebApi.Controllers
 
         // ------------------------------------------
         // Helper method to get userId from JWT claims
-        private Guid? GetCurrentUserId()
+        private string? GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return null;
-            if (Guid.TryParse(userIdClaim.Value, out var guidVal))
-                return guidVal;
-            return null;
+            return userIdClaim.Value;            
         }
     }
 

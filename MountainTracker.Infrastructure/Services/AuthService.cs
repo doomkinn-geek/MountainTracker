@@ -2,6 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using MountainTracker.Core.Services;
@@ -12,60 +13,55 @@ namespace MountainTracker.Infrastructure.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration)
+        public AuthService(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IConfiguration config)
         {
-            _userRepository = userRepository;
-            _configuration = configuration;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _configuration = config;
         }
 
         public async Task<Guid> RegisterUserAsync(string login, string password, string nickname)
         {
-            // 1) Проверка, нет ли уже пользователя с таким логином
-            var existingUser = await _userRepository.GetByLoginAsync(login);
-            if (existingUser != null)
+            // Создаём нового пользователя
+            var user = new ApplicationUser
             {
-                throw new Exception("Пользователь с таким логином уже существует");
-                // можно бросить NotFoundException или ValidationException
-            }
-
-            // 2) Создаём нового пользователя
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                Login = login,
-                PasswordHash = HashPassword(password),
+                UserName = login,
+                Email = login,
                 Nickname = nickname,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow
+                // MarkerColor и пр. поля
             };
 
-            await _userRepository.AddAsync(user);
-            await _userRepository.SaveChangesAsync();
+            var result = await _userManager.CreateAsync(user, password);
+            if (!result.Succeeded)
+            {
+                throw new Exception($"Не удалось создать пользователя: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
 
-            return user.Id;
+            // Возвращаем Guid. Но, если ключ User это string, нужно конвертировать.
+            return Guid.Parse(user.Id);
         }
 
         public async Task<string> LoginAsync(string login, string password)
         {
-            // 1) Ищем пользователя по логину
-            var user = await _userRepository.GetByLoginAsync(login);
+            var user = await _userManager.FindByNameAsync(login);
             if (user == null)
-            {
                 throw new Exception("Неверный логин или пароль");
-            }
 
-            // 2) Проверяем пароль
-            if (!VerifyPassword(password, user.PasswordHash))
-            {
+            // Проверяем пароль
+            var passwordOk = await _userManager.CheckPasswordAsync(user, password);
+            if (!passwordOk)
                 throw new Exception("Неверный логин или пароль");
-            }
 
-            // 3) Генерируем JWT
-            var token = GenerateJwtToken(user.Id);
-            return token;
+            // Генерируем JWT (как раньше)
+            return GenerateJwtToken(user.Id);
         }
 
         public Task<Guid?> ValidateTokenAsync(string token)
@@ -110,7 +106,7 @@ namespace MountainTracker.Infrastructure.Services
             return storedHash == "hashed_" + plainPassword;
         }
 
-        private string GenerateJwtToken(Guid userId)
+        private string GenerateJwtToken(string userId)
         {
             var secretKey = _configuration["Jwt:SecretKey"];
             var issuer = _configuration["Jwt:Issuer"];

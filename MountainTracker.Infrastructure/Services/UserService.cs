@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using MountainTracker.Core.DTO.User;
 using MountainTracker.Core.Services;
 using MountainTracker.Infrastructure.Entities;
@@ -9,71 +10,56 @@ namespace MountainTracker.Infrastructure.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(UserManager<ApplicationUser> userManager)
         {
-            _userRepository = userRepository;
+            _userManager = userManager;
         }
 
-        public async Task<UserDto?> GetUserByIdAsync(Guid userId)
+        public async Task<UserDto?> GetUserByIdAsync(string userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null)
-                return null;
+            // convert Guid to string if needed
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null) return null;
 
             return new UserDto
             {
                 Id = user.Id,
-                Login = user.Login,
+                Login = user.UserName,
                 Nickname = user.Nickname,
                 MarkerColor = user.MarkerColor
             };
         }
 
-        public async Task UpdateUserProfileAsync(Guid userId, UserUpdateDto updateDto)
+        public async Task UpdateUserProfileAsync(string userId, UserUpdateDto updateDto)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
-            {
-                throw new Exception($"User with id {userId} not found.");
-            }
+                throw new Exception($"User {userId} not found");
 
             user.Nickname = updateDto.Nickname ?? user.Nickname;
             user.MarkerColor = updateDto.MarkerColor ?? user.MarkerColor;
-            user.UpdatedAt = DateTime.UtcNow;
 
-            _userRepository.Update(user);
-            await _userRepository.SaveChangesAsync();
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                throw new Exception("Could not update user profile");
+            }
         }
 
-        public async Task ChangePasswordAsync(Guid userId, string oldPassword, string newPassword)
+        public async Task ChangePasswordAsync(string userId, string oldPassword, string newPassword)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
-                throw new Exception($"User with id {userId} not found.");
+                throw new Exception("User not found");
 
-            // Допустим, мы знаем, как "верифицировать" хеш
-            if (!VerifyPassword(oldPassword, user.PasswordHash))
-                throw new Exception("Старый пароль не совпадает.");
-
-            user.PasswordHash = HashPassword(newPassword);
-            user.UpdatedAt = DateTime.UtcNow;
-
-            _userRepository.Update(user);
-            await _userRepository.SaveChangesAsync();
-        }
-
-        // ---------------- HELPER METHODS ----------------
-
-        private string HashPassword(string password)
-        {
-            return "hashed_" + password;
-        }
-
-        private bool VerifyPassword(string plainPassword, string storedHash)
-        {
-            return storedHash == ("hashed_" + plainPassword);
+            var result = await _userManager.ChangePasswordAsync(user, oldPassword, newPassword);
+            if (!result.Succeeded)
+            {
+                throw new Exception("Could not change password");
+            }
         }
     }
+
 }

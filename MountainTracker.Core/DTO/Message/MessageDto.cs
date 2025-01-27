@@ -10,7 +10,7 @@ namespace MountainTracker.Core.DTO.Message
     {
         public Guid Id { get; set; }
         public Guid RoomId { get; set; }
-        public Guid AuthorId { get; set; }
+        public string AuthorId { get; set; }
         public string Text { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
     }

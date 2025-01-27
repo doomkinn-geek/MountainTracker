@@ -4,21 +4,10 @@ using MountainTracker.Infrastructure.Entities;
 
 namespace MountainTracker.Infrastructure.Configurations
 {
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
     {
-        public void Configure(EntityTypeBuilder<User> builder)
+        public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
-            builder.ToTable("Users");
-
-            builder.HasKey(u => u.Id);
-
-            builder.Property(u => u.Login)
-                   .IsRequired()
-                   .HasMaxLength(50);
-
-            builder.Property(u => u.PasswordHash)
-                   .IsRequired();
-
             builder.Property(u => u.Nickname)
                    .HasMaxLength(100);
 

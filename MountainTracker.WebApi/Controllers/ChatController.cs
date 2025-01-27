@@ -24,7 +24,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var msg = await _chatService.SendMessageAsync(roomId, userId.Value, request.Text);
+            var msg = await _chatService.SendMessageAsync(roomId, userId, request.Text);
             return Ok(msg);
         }
 
@@ -40,13 +40,11 @@ namespace MountainTracker.WebApi.Controllers
             return Ok(messages);
         }
 
-        private Guid? GetCurrentUserId()
+        private string? GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return null;
-            if (Guid.TryParse(userIdClaim.Value, out var guidVal))
-                return guidVal;
-            return null;
+            return userIdClaim.Value;            
         }
     }
 

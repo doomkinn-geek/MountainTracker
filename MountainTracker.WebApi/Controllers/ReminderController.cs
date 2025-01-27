@@ -24,7 +24,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var reminderId = await _reminderService.CreateReminderAsync(dto, userId.Value);
+            var reminderId = await _reminderService.CreateReminderAsync(dto, userId);
             return Ok(new { reminderId });
         }
 
@@ -35,7 +35,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            await _reminderService.DeleteReminderAsync(reminderId, userId.Value);
+            await _reminderService.DeleteReminderAsync(reminderId, userId);
             return NoContent();
         }
 
@@ -51,13 +51,11 @@ namespace MountainTracker.WebApi.Controllers
             return Ok(reminders);
         }
 
-        private Guid? GetCurrentUserId()
+        private string? GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return null;
-            if (Guid.TryParse(userIdClaim.Value, out var guidVal))
-                return guidVal;
-            return null;
+            return userIdClaim.Value;
         }
     }
 }

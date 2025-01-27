@@ -31,7 +31,7 @@ namespace MountainTracker.WebApi.Controllers
             {
                 Token = token,
                 // Для удобства вернём userId
-                UserId = Guid.Empty  // можно дополнительно узнать, чей это token, если нужно
+                UserId = string.Empty  // можно дополнительно узнать, чей это token, если нужно
             });
         }
     }

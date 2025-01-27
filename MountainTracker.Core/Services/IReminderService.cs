@@ -12,8 +12,8 @@ namespace MountainTracker.Core.Services
     /// </summary>
     public interface IReminderService
     {
-        Task<Guid> CreateReminderAsync(ReminderDto reminder, Guid creatorUserId);
-        Task DeleteReminderAsync(Guid reminderId, Guid userId);
+        Task<Guid> CreateReminderAsync(ReminderDto reminder, string creatorUserId);
+        Task DeleteReminderAsync(Guid reminderId, string userId);
         Task<IEnumerable<ReminderDto>> GetRemindersForRoomAsync(Guid roomId);
     }
 }

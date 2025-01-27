@@ -9,6 +9,6 @@ namespace MountainTracker.Core.DTO.Auth
     public class LoginResponseDto
     {
         public string Token { get; set; } = null!;
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
     }
 }

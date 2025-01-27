@@ -1,16 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using MountainTracker.Infrastructure.Entities;
 
 namespace MountainTracker.Infrastructure.Data
 {
-    public class MountainTrackerDbContext : DbContext
+    public class MountainTrackerDbContext
+        : IdentityDbContext<ApplicationUser, IdentityRole, string>
     {
         public MountainTrackerDbContext(DbContextOptions<MountainTrackerDbContext> options)
             : base(options)
         {
         }
-
-        public DbSet<User> Users { get; set; } = null!;
+        
         public DbSet<Room> Rooms { get; set; } = null!;
         public DbSet<RoomMember> RoomMembers { get; set; } = null!;
         public DbSet<Location> Locations { get; set; } = null!;

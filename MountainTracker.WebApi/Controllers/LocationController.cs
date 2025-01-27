@@ -24,7 +24,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            await _locationService.UpdateLocationAsync(userId.Value, dto);
+            await _locationService.UpdateLocationAsync(userId, dto);
             return Ok();
         }
 
@@ -40,13 +40,11 @@ namespace MountainTracker.WebApi.Controllers
             return Ok(locations);
         }
 
-        private Guid? GetCurrentUserId()
+        private string? GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return null;
-            if (Guid.TryParse(userIdClaim.Value, out var guidVal))
-                return guidVal;
-            return null;
+            return userIdClaim.Value;
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using MountainTracker.Core.DTO.Message;
 using MountainTracker.Core.Services;
 using MountainTracker.Infrastructure.Entities;
@@ -13,39 +14,41 @@ namespace MountainTracker.Infrastructure.Services
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IRoomRepository _roomRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public ChatService(
             IMessageRepository messageRepository,
             IRoomRepository roomRepository,
-            IUserRepository userRepository)
+            UserManager<ApplicationUser> userManager)
         {
             _messageRepository = messageRepository;
             _roomRepository = roomRepository;
-            _userRepository = userRepository;
+            _userManager = userManager;
         }
 
-        public async Task<MessageDto> SendMessageAsync(Guid roomId, Guid authorId, string text)
+        public async Task<MessageDto> SendMessageAsync(Guid roomId, string authorId, string text)
         {
-            // Проверяем, существует ли комната и пользователь
+            // 1) Проверяем, существует ли комната
             var room = await _roomRepository.GetByIdAsync(roomId);
             if (room == null)
                 throw new Exception("Room not found");
 
-            var user = await _userRepository.GetByIdAsync(authorId);
+            // 2) Вместо userRepository — используем UserManager
+            var user = await _userManager.FindByIdAsync(authorId.ToString());
             if (user == null)
                 throw new Exception("User not found");
 
-            // Можно проверить, что userId действительно состоит в этой комнате
-            var isMember = room.RoomMembers.Any(rm => rm.UserId == authorId);
+            // 3) Проверяем, что userId состоит в комнате
+            bool isMember = room.RoomMembers.Any(rm => rm.UserId == authorId);
             if (!isMember)
                 throw new Exception("User is not a member of this room");
 
+            // 4) Создаём сообщение
             var message = new Message
             {
                 Id = Guid.NewGuid(),
                 RoomId = roomId,
-                AuthorId = authorId,
+                AuthorId = authorId,   // храните Guid, если RoomMember.UserId — Guid
                 Text = text,
                 CreatedAt = DateTime.UtcNow
             };
@@ -66,11 +69,10 @@ namespace MountainTracker.Infrastructure.Services
         public async Task<IEnumerable<MessageDto>> GetLastMessagesAsync(Guid roomId, int limit = 50)
         {
             var messages = await _messageRepository.GetLastMessagesAsync(roomId, limit);
-            // Поскольку метод возвращает сообщения в порядке убывания времени, 
-            // если хотим вернуть их в хронологическом порядке, можем сделать Reverse()
 
+            // Сортируем по возрастанию, если нужно
             return messages
-                .OrderBy(m => m.CreatedAt) // сортировка по возрастанию
+                .OrderBy(m => m.CreatedAt)
                 .Select(m => new MessageDto
                 {
                     Id = m.Id,

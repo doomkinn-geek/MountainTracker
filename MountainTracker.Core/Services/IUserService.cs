@@ -12,9 +12,9 @@ namespace MountainTracker.Core.Services
     /// </summary>
     public interface IUserService
     {
-        Task<UserDto?> GetUserByIdAsync(Guid userId);
-        Task UpdateUserProfileAsync(Guid userId, UserUpdateDto updateDto);
-        Task ChangePasswordAsync(Guid userId, string oldPassword, string newPassword);
+        Task<UserDto?> GetUserByIdAsync(string userId);
+        Task UpdateUserProfileAsync(string userId, UserUpdateDto updateDto);
+        Task ChangePasswordAsync(string userId, string oldPassword, string newPassword);
     }
 }
 

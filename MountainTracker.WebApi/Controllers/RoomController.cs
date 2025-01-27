@@ -24,7 +24,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var roomId = await _roomService.CreateRoomAsync(dto, userId.Value);
+            var roomId = await _roomService.CreateRoomAsync(dto, userId);
             return Ok(new { roomId });
         }
 
@@ -35,7 +35,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var result = await _roomService.JoinRoomAsync(roomId, userId.Value, joinDto.Password);
+            var result = await _roomService.JoinRoomAsync(roomId, userId, joinDto.Password);
             if (!result) return BadRequest("Не удалось войти в комнату");
             return Ok();
         }
@@ -47,7 +47,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            await _roomService.LeaveRoomAsync(roomId, userId.Value);
+            await _roomService.LeaveRoomAsync(roomId, userId);
             return Ok();
         }
 
@@ -58,7 +58,7 @@ namespace MountainTracker.WebApi.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var rooms = await _roomService.GetRoomsForUserAsync(userId.Value);
+            var rooms = await _roomService.GetRoomsForUserAsync(userId);
             return Ok(rooms);
         }
 
@@ -70,13 +70,11 @@ namespace MountainTracker.WebApi.Controllers
             return Ok(roomInfo);
         }
 
-        private Guid? GetCurrentUserId()
+        private string? GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return null;
-            if (Guid.TryParse(userIdClaim.Value, out var guidVal))
-                return guidVal;
-            return null;
+            return userIdClaim.Value;
         }
     }
 }

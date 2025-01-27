@@ -12,7 +12,7 @@ namespace MountainTracker.Core.Services
     /// </summary>
     public interface ILocationService
     {
-        Task UpdateLocationAsync(Guid userId, LocationDto locationDto);
+        Task UpdateLocationAsync(string userId, LocationDto locationDto);
         Task<IEnumerable<LocationDto>> GetLatestLocationsForRoomAsync(Guid roomId);
     }
 }
